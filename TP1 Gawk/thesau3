@@ -1,0 +1,86 @@
+#!/usr/bin/awk -f
+# cria ficheiros html ?? a ver
+
+BEGIN 					{FS = ":";
+						 utf = "<html><head><meta charset='UTF-8'></head> \n"
+ 				 	     f = "<li><a href ='%s'> %s </a> </li> \n "
+ 				 	     s = "<p> %s </p>"
+ 				 	     g = "<li><a href =https://www.google.pt/search?q=%s > %s </a> </li> \n "
+ 				 	     print "<html><head><meta charset='UTF-8'> </head> \n"> "indiceGeral.html"
+						}
+
+/%THE/					{split($2,a,"<")}
+/%THE/					{for(i=1 ; i<=NF; i++){
+							if($i ~/_/){
+								gsub("_"," ",$i)
+								b[i-1] = $i
+							}
+							else{
+								b[i-1]=$i;
+							}
+						 }
+						 for(x in b) print b[x]
+						 print b[0]
+						}
+
+#/%THE/ matches lines having this text, as well as /%%/ does.
+/%THE/					{flag = 1; next} 	#sets the flag when the text %THE is found. Then, it skips the line.
+/%%/					{flag = 0}	    #unsets the flag when the text %% is found.
+
+# NF==3 nao chega... tenho de verificar se existe algo escrito nesses campos
+# maior que dois pois ha campos com 2 espaços e imprimia na mesma... para corrigir pode ser verificar se no espaço existe letras
+
+
+
+
+flag && !cont[$1] && $0!~/[#]/				{cont[$1]++; 
+												 printf (f, $1".html", $1) > "indiceGeral.html" 
+												 print utf > $1 ".html"
+											}
+
+flag && $0!~/[#]/	 						{printf (s,$1)  > $1".html"
+											 	if(length($3)>2){
+											 		printf(s,b[2]) > $1".html"
+										 			if($3 ~/|/){
+													 	split($3,aux,"|");
+													 	for(x in aux){
+													 		#gsub(" ","",aux[x]) ha casos em que nao bate certo
+													 		printf (g,aux[x],aux[x]) > $1".html"
+													 	}
+											 		}
+											 		else{
+											 			print(g,$3,$3) > $1".html"
+											 		}
+											 	}
+											 	if(length($2)>2){
+											 		print(b[1]) > $1".html"
+											 		printf(g,$2,$2) > $1".html"
+											 	}
+											 	if(b[0] ~/</){
+											 		split(b[0],auxB,"<")
+											 		print(auxB[2]) > $1".html"
+											 		printf(g,$1,$1) > $1".html"
+											 	}
+											 	if(NF>3){
+											 		y=4
+											 		while(y<=NF){
+											 			if(length($y)>2){
+												 			if(b[y] ~/</){
+												 				split(b[y],auxY,"<")
+														 		print(auxY[1]) > $1".html"
+
+												 			}
+												 			else{
+											 					print(b[y]) > $1".html"
+												 			}
+													 		printf (g,$y,$y) > $1".html"
+
+														}
+														y++;
+											 		}
+
+											 	}
+
+											 }
+											
+											
